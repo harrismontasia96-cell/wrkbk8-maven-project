@@ -11,37 +11,104 @@ public class App {
 
         String url = "jdbc:mysql://127.0.0.1:3306/northwind";
         String user = "root";
-        String password ="yearup";
+        String password = "yearup";
 
 
-        String query = "SELECT * FROM Products WHERE ProductID = ? OR ProductName LIKE ?";
         try {
-            // Establishing connection
             Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(query);
+            int choice = 1;
+            while (choice != 0) {
 
-//            System.out.printf("Hey, this is a string %s\n", "Okra");
-            System.out.print("Hey, type in a name: ");
-            String name = scanner.nextLine();
+                System.out.println("\nWhat do you want to do?");
+                System.out.println("1) Display all products");
+                System.out.println("2) Display all customers");
+                System.out.println("0) Exit");
+                System.out.println("Select an option");
+                choice = Integer.parseInt(scanner.nextLine());
 
-            statement.setInt(1, 1); //auto sanitize mal inputs
-            statement.setString(2, "%" + name + "%");
+                if (choice == 1) {
+                    displayProducts(connection);
+                } else if (choice == 2) {
+                    displayCustomers(connection);
+                } else if (choice == 0) {
+                    System.out.println("Goodbye!");
+                } else {
+                    System.out.println("Invalid option! Try again!");
+                }
+            }
 
-            // Executing query
-            ResultSet results = statement.executeQuery();
+        } catch (SQLException e) {
+            System.out.println("Error connecting to data base:");
+            e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 
-            // Processing the result set
+    public static void displayProducts(Connection connection) {
+        String query = "SELECT ProductName FROM products ORDER BY ProductName";
+
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet results = statement.executeQuery(query);
+
+            System.out.println("\n--- ALL PRODUCTS ---");
+
             while (results.next()) {
-                // Replace with your column names and types
                 System.out.println(results.getString("ProductName"));
             }
 
-            // Closing resources
             results.close();
             statement.close();
-            connection.close();
+
         } catch (SQLException e) {
+            System.out.println("ERROR reading products:");
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void displayCustomers(Connection connection) {
+        String query = """
+                SELECT ContactName, CompanyName, City, Country, Phone
+                FROM customers
+                ORDER BY Country, ContactName
+                """;
+
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet results = statement.executeQuery(query);
+
+            System.out.println("\n--- ALL CUSTOMERS ---");
+            System.out.println("Contact Name | Company | City | Country | Phone");
+            System.out.println("------------------------------------------------------------");
+
+            while (results.next()) {
+                String cName = results.getString("ContactName");
+                String company = results.getString("CompanyName");
+                String city = results.getString("City");
+                String country = results.getString("Country");
+                String phone = results.getString("Phone");
+
+                System.out.printf("%s | %s | %s | %s | %s%n",
+                        cName, company, city, country, phone);
+            }
+
+            results.close();
+            statement.close();
+
+        } catch (SQLException e) {
+            System.out.println("ERROR reading customers:");
             e.printStackTrace();
         }
     }
 }
+
+
+
+
