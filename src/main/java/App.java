@@ -13,6 +13,8 @@ public class App {
         String user = "root";
         String password = "yearup";
 
+        Connection connection = null;
+
 
         try {
             Connection connection = DriverManager.getConnection(url, user, password);
@@ -43,7 +45,7 @@ public class App {
         } finally {
             try {
                 if (connection != null)
-                    connection.close();
+                connection.close();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
