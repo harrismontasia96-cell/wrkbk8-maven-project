@@ -16,7 +16,7 @@ public class App {
         Connection connection = null;
 
         try {
-            Connection = DriverManager.getConnection(url, user, password);
+            connection = DriverManager.getConnection(url, user, password);
             int choice = 1;
 
 
