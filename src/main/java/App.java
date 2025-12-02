@@ -24,6 +24,7 @@ public class App {
                 System.out.println("\nWhat do you want to do?");
                 System.out.println("1) Display all products");
                 System.out.println("2) Display all customers");
+                System.out.println("3) Display all categories");
                 System.out.println("0) Exit");
                 System.out.println("Select an option");
                 choice = Integer.parseInt(scanner.nextLine());
@@ -32,6 +33,8 @@ public class App {
                     displayProducts(connection);
                 } else if (choice == 2) {
                     displayCustomers(connection);
+                } else if (choice == 3) {
+                    displayCategories(connection, scanner);
                 } else if (choice == 0) {
                     System.out.println("Goodbye!");
                 } else {
@@ -45,7 +48,7 @@ public class App {
         } finally {
             try {
                 if (connection != null)
-                connection.close();
+                    connection.close();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -74,12 +77,11 @@ public class App {
         }
     }
 
-
     public static void displayCustomers(Connection connection) {
         String query = """
-                SELECT ContactName, CompanyName, City, Country, Phone
-                FROM customers
-                ORDER BY Country, ContactName
+                        SELECT ContactName, CompanyName, City, Country, Phone
+                        FROM customers
+                        ORDER BY Country, ContactName
                 """;
 
         try {
@@ -109,7 +111,63 @@ public class App {
             e.printStackTrace();
         }
     }
-}
+        public static void displayCategories(Connection connection, Scanner scanner) {
+
+            String catQuery = "SELECT CategoryID, CategoryName FROM categories ORDER BY CategoryID";
+
+            try (Statement stmt = connection.createStatement();
+                 ResultSet results = stmt.executeQuery(catQuery)) {
+
+                System.out.println("\n--- ALL CATEGORIES ---");
+
+                while (results.next()) {
+                    System.out.printf("%d) %s%n",
+                            results.getInt("CategoryID"),
+                            results.getString("CategoryName"));
+                }
+
+            } catch (SQLException e) {
+                System.out.println("ERROR reading categories:");
+                e.printStackTrace();
+                return;
+            }
+
+
+            System.out.print("\nEnter a category ID to view its products: ");
+            int selectedId = Integer.parseInt(scanner.nextLine());
+
+
+            String prodQuery = """
+            SELECT ProductID, ProductName, UnitPrice, UnitsInStock
+            FROM products
+            WHERE CategoryID = ?
+            ORDER BY ProductID
+            """;
+
+            try (PreparedStatement ps = connection.prepareStatement(prodQuery)) {
+
+                ps.setInt(1, selectedId);
+                ResultSet products = ps.executeQuery();
+
+                System.out.println("\n--- PRODUCTS IN CATEGORY " + selectedId + " ---");
+
+                while (products.next()) {
+                    System.out.printf("%d | %s | $%.2f | %d in stock%n",
+                            products.getInt("ProductID"),
+                            products.getString("ProductName"),
+                            products.getDouble("UnitPrice"),
+                            products.getInt("UnitsInStock"));
+                }
+
+            } catch (SQLException e) {
+                System.out.println("ERROR reading products by category:");
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
 
 
 
