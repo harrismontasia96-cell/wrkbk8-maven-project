@@ -15,12 +15,12 @@ public class App {
 
         Connection connection = null;
 
-
         try {
-            Connection connection = DriverManager.getConnection(url, user, password);
+            Connection = DriverManager.getConnection(url, user, password);
             int choice = 1;
-            while (choice != 0) {
 
+
+            while (choice != 0) {
                 System.out.println("\nWhat do you want to do?");
                 System.out.println("1) Display all products");
                 System.out.println("2) Display all customers");
